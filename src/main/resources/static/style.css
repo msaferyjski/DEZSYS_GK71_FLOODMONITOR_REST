@@ -1,0 +1,20 @@
+body { font-family: sans-serif; max-width: 1300px; margin: 0 auto; padding: 0 16px; }
+
+.filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+.filters label { display: flex; flex-direction: column; gap: 2px; }
+.filters label.check { flex-direction: row; align-items: center; }
+
+.state { margin-top: 8px; min-height: 1.2em; }
+.state.error { color: red; }
+
+.cards { display: flex; flex-wrap: wrap; gap: 24px; }
+.card strong { display: block; }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 4px 8px; text-align: left; border-bottom: 1px solid #ddd; white-space: nowrap; }
+
+.NORMAL { color: green; }
+.WARNING { color: orange; }
+.CRITICAL { color: red; }
+.UNKNOWN { color: gray; }
