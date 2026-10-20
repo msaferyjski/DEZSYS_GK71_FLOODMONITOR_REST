@@ -1,0 +1,762 @@
+openapi: 3.0.1
+info:
+  title: FloodMonitor REST API
+  description: "Hochwasser-Frühwarnsystem. Alle Antworten als application/json (Standard)\
+    \ oder application/xml über den Accept-Header. Lesende Endpunkte sind öffentlich,\
+    \ schreibende benötigen den Header X-API-Key."
+  version: v1
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: Stationen
+  description: "Messstationen, Messwerte und Statistik"
+paths:
+  /api/v1/stations:
+    get:
+      tags:
+      - Stationen
+      summary: Alle Messstationen abrufen
+      operationId: getStations
+      parameters:
+      - name: river
+        in: query
+        description: "Fluss, z.B. Donau"
+        required: false
+        schema:
+          type: string
+      - name: isActive
+        in: query
+        description: Nur aktive oder inaktive Stationen
+        required: false
+        schema:
+          type: boolean
+      - name: warningLevel
+        in: query
+        description: Aktuelle Warnstufe
+        required: false
+        schema:
+          type: string
+          enum:
+          - NORMAL
+          - WARNING
+          - CRITICAL
+          - UNKNOWN
+      responses:
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Liste der Stationen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StationList'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/StationList'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+      - Stationen
+      summary: Station anlegen
+      operationId: createStation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Station'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Station'
+        required: true
+      responses:
+        "409":
+          description: Station existiert bereits
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "401":
+          description: API-Key fehlt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "201":
+          description: Station erstellt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Station'
+        "403":
+          description: API-Key ungültig
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "415":
+          description: Medientyp nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - apiKey: []
+  /api/v1/stations/{stationId}:
+    get:
+      tags:
+      - Stationen
+      summary: Einzelne Station abrufen
+      operationId: getStation
+      parameters:
+      - name: stationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Station nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Station
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Station'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Station'
+    delete:
+      tags:
+      - Stationen
+      summary: Station löschen
+      operationId: deleteStation
+      parameters:
+      - name: stationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "401":
+          description: API-Key fehlt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "403":
+          description: API-Key ungültig
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Station nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "204":
+          description: Station gelöscht
+      security:
+      - apiKey: []
+  /api/v1/stations/{stationId}/statistics:
+    get:
+      tags:
+      - Stationen
+      summary: Statistik einer Station abrufen
+      operationId: getStatistics
+      parameters:
+      - name: stationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: from
+        in: query
+        description: "Beginn, ISO-8601"
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: to
+        in: query
+        description: "Ende, ISO-8601"
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Statistik
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Statistics'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Statistics'
+        "404":
+          description: Station nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/stations/{stationId}/measurements:
+    get:
+      tags:
+      - Stationen
+      summary: Historische Messwerte abrufen
+      description: Neueste zuerst
+      operationId: getMeasurements
+      parameters:
+      - name: stationId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: from
+        in: query
+        description: "Beginn, ISO-8601"
+        required: false
+        schema:
+          type: string
+          format: date-time
+        example: 2026-05-01T08:00:00Z
+      - name: to
+        in: query
+        description: "Ende, ISO-8601"
+        required: false
+        schema:
+          type: string
+          format: date-time
+        example: 2026-05-01T12:00:00Z
+      - name: limit
+        in: query
+        description: "Anzahl 1 bis 1000, Standard 100"
+        required: false
+        schema:
+          type: integer
+          format: int32
+      - name: warningLevel
+        in: query
+        description: Warnstufe
+        required: false
+        schema:
+          type: string
+          enum:
+          - NORMAL
+          - WARNING
+          - CRITICAL
+          - UNKNOWN
+      responses:
+        "200":
+          description: Liste der Messwerte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeasurementList'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/MeasurementList'
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Station nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/stations/{stationId}/measurements/latest:
+    get:
+      tags:
+      - Stationen
+      summary: Aktuellsten Messwert abrufen
+      operationId: getLatest
+      parameters:
+      - name: stationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "404":
+          description: Station oder Messwert nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Messwert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Measurement'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Measurement'
+  /api/v1/alerts:
+    get:
+      tags:
+      - Warnungen
+      summary: Aktuelle Warnungen abrufen
+      description: Ohne warningLevel werden WARNING und CRITICAL geliefert
+      operationId: getAlerts
+      parameters:
+      - name: warningLevel
+        in: query
+        description: Warnstufe
+        required: false
+        schema:
+          type: string
+          enum:
+          - NORMAL
+          - WARNING
+          - CRITICAL
+          - UNKNOWN
+      - name: river
+        in: query
+        description: Fluss
+        required: false
+        schema:
+          type: string
+      responses:
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        "200":
+          description: Liste der Warnungen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlertList'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/AlertList'
+components:
+  schemas:
+    Location:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+        longitude:
+          type: number
+          format: double
+    Station:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        river:
+          type: string
+        location:
+          $ref: '#/components/schemas/Location'
+        normalWaterLevel:
+          type: number
+          format: double
+        warningWaterLevel:
+          type: number
+          format: double
+        criticalWaterLevel:
+          type: number
+          format: double
+        status:
+          type: string
+          readOnly: true
+          enum:
+          - ONLINE
+          - MAINTENANCE
+          - OFFLINE
+        currentWarningLevel:
+          type: string
+          readOnly: true
+          enum:
+          - NORMAL
+          - WARNING
+          - CRITICAL
+          - UNKNOWN
+        isActive:
+          type: boolean
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
+    StationList:
+      type: object
+      properties:
+        stations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Station'
+    Statistics:
+      type: object
+      properties:
+        stationId:
+          type: string
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        minWaterLevel:
+          type: number
+          format: double
+        maxWaterLevel:
+          type: number
+          format: double
+        avgWaterLevel:
+          type: number
+          format: double
+        avgFlowRate:
+          type: number
+          format: double
+        totalRainfall:
+          type: number
+          format: double
+        measurementCount:
+          type: integer
+          format: int32
+        warningCount:
+          type: integer
+          format: int32
+        criticalCount:
+          type: integer
+          format: int32
+    Measurement:
+      type: object
+      properties:
+        stationId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        waterLevel:
+          type: number
+          format: double
+        flowRate:
+          type: number
+          format: double
+        rainfall:
+          type: number
+          format: double
+        temperature:
+          type: number
+          format: double
+        batteryLevel:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - ONLINE
+          - MAINTENANCE
+          - OFFLINE
+        warningLevel:
+          type: string
+          enum:
+          - NORMAL
+          - WARNING
+          - CRITICAL
+          - UNKNOWN
+    MeasurementList:
+      type: object
+      properties:
+        measurements:
+          type: array
+          items:
+            $ref: '#/components/schemas/Measurement'
+    Alert:
+      type: object
+      properties:
+        stationId:
+          type: string
+        stationName:
+          type: string
+        river:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        waterLevel:
+          type: number
+          format: double
+        warningWaterLevel:
+          type: number
+          format: double
+        criticalWaterLevel:
+          type: number
+          format: double
+        warningLevel:
+          type: string
+          enum:
+          - NORMAL
+          - WARNING
+          - CRITICAL
+          - UNKNOWN
+    AlertList:
+      type: object
+      properties:
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      name: X-API-Key
+      in: header
