@@ -2,7 +2,7 @@ package com.example.floodmonitor.controller;
 
 import com.example.floodmonitor.exception.ErrorResponse;
 import com.example.floodmonitor.model.Measurement;
-import com.example.floodmonitor.model.MeasurementList;
+import com.example.floodmonitor.model.MeasurementPage;
 import com.example.floodmonitor.model.Station;
 import com.example.floodmonitor.model.StationList;
 import com.example.floodmonitor.model.Statistics;
@@ -32,6 +32,7 @@ import java.time.Instant;
 
 @RestController
 @RequestMapping(value = "/api/v1/stations", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@ApiResponse(responseCode = "401", description = "API-Key fehlt oder ist ungültig", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 @Tag(name = "Stationen", description = "Messstationen, Messwerte und Statistik")
 @ApiResponse(responseCode = "400", description = "Ungültige Eingabe", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 @ApiResponse(responseCode = "406", description = "Format nicht unterstützt", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -73,16 +74,20 @@ public class StationController {
     }
 
     @GetMapping("/{stationId}/measurements")
-    @Operation(summary = "Historische Messwerte abrufen", description = "Neueste zuerst")
+    @Operation(summary = "Historische Messwerte abrufen", description = "Filterung und chronologische Sortierung vor der Seitenauswahl. Leere Seiten liefern 200.")
     @ApiResponse(responseCode = "200", description = "Liste der Messwerte")
     @ApiResponse(responseCode = "404", description = "Station nicht gefunden", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    public MeasurementList getMeasurements(
+    public MeasurementPage getMeasurements(
             @PathVariable String stationId,
             @Parameter(description = "Beginn, ISO-8601", example = "2026-05-01T08:00:00Z") @RequestParam(required = false) Instant from,
             @Parameter(description = "Ende, ISO-8601", example = "2026-05-01T12:00:00Z") @RequestParam(required = false) Instant to,
-            @Parameter(description = "Anzahl 1 bis 1000, Standard 100") @RequestParam(required = false) Integer limit,
-            @Parameter(description = "Warnstufe") @RequestParam(required = false) WarningLevel warningLevel) {
-        return new MeasurementList(measurementService.history(stationId, from, to, limit, warningLevel));
+            @Parameter(description = "Messwerte pro Seite, Standard 100", schema = @Schema(type = "integer", format = "int32", minimum = "1", maximum = "1000", defaultValue = "100")) @RequestParam(required = false) Integer limit,
+            @Parameter(description = "Warnstufe") @RequestParam(required = false) WarningLevel warningLevel,
+            @Parameter(description = "Seitennummer ab 1, Standard 1", schema = @Schema(type = "integer", format = "int32", minimum = "1", defaultValue = "1"))
+            @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Chronologische Reihenfolge, Standard desc", schema = @Schema(defaultValue = "desc", allowableValues = {"asc", "desc"}))
+            @RequestParam(defaultValue = "desc") String sort) {
+        return measurementService.history(stationId, from, to, limit, warningLevel, page, sort);
     }
 
     @GetMapping("/{stationId}/statistics")
@@ -99,8 +104,7 @@ public class StationController {
     @PostMapping(consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @Operation(summary = "Station anlegen", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponse(responseCode = "201", description = "Station erstellt")
-    @ApiResponse(responseCode = "401", description = "API-Key fehlt", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    @ApiResponse(responseCode = "403", description = "API-Key ungültig", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "403", description = "Admin-Rechte erforderlich", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "409", description = "Station existiert bereits", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "415", description = "Medientyp nicht unterstützt", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<Station> createStation(@RequestBody Station station) {
@@ -112,8 +116,7 @@ public class StationController {
     @DeleteMapping("/{stationId}")
     @Operation(summary = "Station löschen", security = @SecurityRequirement(name = "apiKey"))
     @ApiResponse(responseCode = "204", description = "Station gelöscht")
-    @ApiResponse(responseCode = "401", description = "API-Key fehlt", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    @ApiResponse(responseCode = "403", description = "API-Key ungültig", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "403", description = "Admin-Rechte erforderlich", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @ApiResponse(responseCode = "404", description = "Station nicht gefunden", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     public ResponseEntity<Void> deleteStation(@PathVariable String stationId) {
         stationService.delete(stationId);

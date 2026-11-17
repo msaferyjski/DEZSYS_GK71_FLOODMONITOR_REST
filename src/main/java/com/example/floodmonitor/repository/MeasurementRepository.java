@@ -33,8 +33,10 @@ public class MeasurementRepository {
         return list == null || list.isEmpty() ? Optional.empty() : Optional.of(list.get(list.size() - 1));
     }
 
-    public synchronized boolean isEmpty() {
-        return measurements.isEmpty();
+    public synchronized List<Measurement> latestByStation() {
+        return measurements.keySet().stream().sorted()
+                .map(id -> findLatest(id).orElseThrow())
+                .toList();
     }
 
     public synchronized void deleteByStationId(String stationId) {

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v1/alerts", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@ApiResponse(responseCode = "401", description = "API-Key fehlt oder ist ungültig", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
 @Tag(name = "Warnungen")
 public class AlertController {
 

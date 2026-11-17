@@ -1,13 +1,14 @@
 openapi: 3.0.1
 info:
   title: FloodMonitor REST API
-  description: "Hochwasser-Frühwarnsystem. Alle Antworten als application/json (Standard)\
-    \ oder application/xml über den Accept-Header. Lesende Endpunkte sind öffentlich,\
-    \ schreibende benötigen den Header X-API-Key."
+  description: Hochwasser-Frühwarnsystem. Alle Antworten als application/json (Standard)
+    oder application/xml über den Accept-Header. Viewer und Admin lesen mit X-API-Key.
+    Nur Admin darf Stationen anlegen und löschen.
   version: v1
 servers:
-- url: http://localhost:8080
-  description: Generated server url
+- url: /
+security:
+- apiKey: []
 tags:
 - name: Stationen
   description: "Messstationen, Messwerte und Statistik"
@@ -43,42 +44,51 @@ paths:
           - CRITICAL
           - UNKNOWN
       responses:
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "400":
           description: Ungültige Eingabe
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Interner Fehler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "200":
-          description: Liste der Stationen
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StationList'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/StationList'
+                $ref: "#/components/schemas/ErrorResponse"
         "406":
           description: Format nicht unterstützt
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "200":
+          description: Liste der Stationen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StationList"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/StationList"
     post:
       tags:
       - Stationen
@@ -88,84 +98,84 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Station'
+              $ref: "#/components/schemas/Station"
           application/xml:
             schema:
-              $ref: '#/components/schemas/Station'
+              $ref: "#/components/schemas/Station"
         required: true
       responses:
-        "409":
-          description: Station existiert bereits
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Interner Fehler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "401":
-          description: API-Key fehlt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Format nicht unterstützt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         "201":
           description: Station erstellt
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Station'
+                $ref: "#/components/schemas/Station"
             application/xml:
               schema:
-                $ref: '#/components/schemas/Station'
+                $ref: "#/components/schemas/Station"
         "403":
-          description: API-Key ungültig
+          description: Admin-Rechte erforderlich
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Station existiert bereits
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "415":
           description: Medientyp nicht unterstützt
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
       security:
       - apiKey: []
   /api/v1/stations/{stationId}:
@@ -181,51 +191,60 @@ paths:
         schema:
           type: string
       responses:
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Interner Fehler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Format nicht unterstützt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "404":
-          description: Station nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         "200":
           description: Station
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Station'
+                $ref: "#/components/schemas/Station"
             application/xml:
               schema:
-                $ref: '#/components/schemas/Station'
+                $ref: "#/components/schemas/Station"
+        "404":
+          description: Station nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     delete:
       tags:
       - Stationen
@@ -238,62 +257,62 @@ paths:
         schema:
           type: string
       responses:
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Interner Fehler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "401":
-          description: API-Key fehlt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Format nicht unterstützt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+        "204":
+          description: Station gelöscht
         "403":
-          description: API-Key ungültig
+          description: Admin-Rechte erforderlich
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: Station nicht gefunden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "204":
-          description: Station gelöscht
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
       security:
       - apiKey: []
   /api/v1/stations/{stationId}/statistics:
@@ -323,57 +342,67 @@ paths:
           type: string
           format: date-time
       responses:
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Interner Fehler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Format nicht unterstützt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         "200":
           description: Statistik
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Statistics'
+                $ref: "#/components/schemas/Statistics"
             application/xml:
               schema:
-                $ref: '#/components/schemas/Statistics'
+                $ref: "#/components/schemas/Statistics"
         "404":
           description: Station nicht gefunden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/v1/stations/{stationId}/measurements:
     get:
       tags:
       - Stationen
       summary: Historische Messwerte abrufen
-      description: Neueste zuerst
+      description: Filterung und chronologische Sortierung vor der Seitenauswahl.
+        Leere Seiten liefern 200.
       operationId: getMeasurements
       parameters:
       - name: stationId
@@ -399,11 +428,14 @@ paths:
         example: 2026-05-01T12:00:00Z
       - name: limit
         in: query
-        description: "Anzahl 1 bis 1000, Standard 100"
+        description: "Messwerte pro Seite, Standard 100"
         required: false
         schema:
+          maximum: 1000
+          minimum: 1
           type: integer
           format: int32
+          default: 100
       - name: warningLevel
         in: query
         description: Warnstufe
@@ -415,52 +447,79 @@ paths:
           - WARNING
           - CRITICAL
           - UNKNOWN
+      - name: page
+        in: query
+        description: "Seitennummer ab 1, Standard 1"
+        required: false
+        schema:
+          minimum: 1
+          type: integer
+          format: int32
+          default: 1
+      - name: sort
+        in: query
+        description: "Chronologische Reihenfolge, Standard desc"
+        required: false
+        schema:
+          type: string
+          enum:
+          - asc
+          - desc
       responses:
         "200":
           description: Liste der Messwerte
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MeasurementList'
+                $ref: "#/components/schemas/MeasurementPage"
             application/xml:
               schema:
-                $ref: '#/components/schemas/MeasurementList'
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Interner Fehler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Format nicht unterstützt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/MeasurementPage"
         "404":
           description: Station nicht gefunden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
             application/xml:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/v1/stations/{stationId}/measurements/latest:
     get:
       tags:
@@ -474,51 +533,76 @@ paths:
         schema:
           type: string
       responses:
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "500":
-          description: Interner Fehler
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "404":
-          description: Station oder Messwert nicht gefunden
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Format nicht unterstützt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         "200":
           description: Messwert
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Measurement'
+                $ref: "#/components/schemas/Measurement"
             application/xml:
               schema:
-                $ref: '#/components/schemas/Measurement'
+                $ref: "#/components/schemas/Measurement"
+        "404":
+          description: Station oder Messwert nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Interner Fehler
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/v1/measurements/latest:
+    get:
+      tags:
+      - Stationen
+      summary: Letzten empfangenen Messwert je Station zusammenfassen
+      operationId: latest
+      responses:
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/v1/alerts:
     get:
       tags:
@@ -545,33 +629,42 @@ paths:
         schema:
           type: string
       responses:
-        "400":
-          description: Ungültige Eingabe
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        "406":
-          description: Format nicht unterstützt
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-            application/xml:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
         "200":
           description: Liste der Warnungen
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AlertList'
+                $ref: "#/components/schemas/AlertList"
             application/xml:
               schema:
-                $ref: '#/components/schemas/AlertList'
+                $ref: "#/components/schemas/AlertList"
+        "400":
+          description: Ungültige Eingabe
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "406":
+          description: Format nicht unterstützt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: API-Key fehlt oder ist ungültig
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     Location:
@@ -593,7 +686,7 @@ components:
         river:
           type: string
         location:
-          $ref: '#/components/schemas/Location'
+          $ref: "#/components/schemas/Location"
         normalWaterLevel:
           type: number
           format: double
@@ -641,7 +734,7 @@ components:
         stations:
           type: array
           items:
-            $ref: '#/components/schemas/Station'
+            $ref: "#/components/schemas/Station"
     Statistics:
       type: object
       properties:
@@ -713,13 +806,32 @@ components:
           - WARNING
           - CRITICAL
           - UNKNOWN
-    MeasurementList:
+    MeasurementPage:
       type: object
       properties:
+        page:
+          minimum: 1
+          type: integer
+          description: Angeforderte Seite
+          format: int32
+        limit:
+          type: integer
+          description: Maximale Anzahl Messwerte pro Seite
+          format: int32
+        total:
+          type: integer
+          description: "Treffer nach Filterung, vor Seitenauswahl"
+          format: int32
+        sort:
+          type: string
+        totalPages:
+          type: integer
+          description: "Gesamtzahl der Seiten, 0 bei leerem Ergebnis"
+          format: int32
         measurements:
           type: array
           items:
-            $ref: '#/components/schemas/Measurement'
+            $ref: "#/components/schemas/Measurement"
     Alert:
       type: object
       properties:
@@ -754,7 +866,7 @@ components:
         alerts:
           type: array
           items:
-            $ref: '#/components/schemas/Alert'
+            $ref: "#/components/schemas/Alert"
   securitySchemes:
     apiKey:
       type: apiKey

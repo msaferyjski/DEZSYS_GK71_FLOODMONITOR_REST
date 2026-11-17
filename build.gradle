@@ -26,3 +26,11 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+tasks.named('bootJar') {
+    archiveFileName = 'floodmonitor.jar'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 17
+}

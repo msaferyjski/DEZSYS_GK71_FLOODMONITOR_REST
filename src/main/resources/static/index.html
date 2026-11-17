@@ -5,16 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>FloodMonitor</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="app.js" defer></script>
 </head>
 <body>
 <header>
     <h1>FloodMonitor</h1>
+    <form id="access">
+        <label id="keyLabel">API-Schlüssel <input type="password" id="key" autocomplete="off" required></label>
+        <button id="login">Anmelden</button>
+        <button type="button" id="logout" hidden>Abmelden</button>
+    </form>
 </header>
 <main>
     <section class="panel">
-        <div class="filters">
+        <form id="filters" class="filters">
             <label>Station<select id="station"></select></label>
             <label>Von<input type="datetime-local" id="from"></label>
             <label>Bis<input type="datetime-local" id="to"></label>
@@ -27,7 +31,13 @@
                     <option>UNKNOWN</option>
                 </select>
             </label>
-            <label>Limit<input type="number" id="limit" value="50" min="1" max="1000"></label>
+            <label>Pro Seite<input type="number" id="limit" value="10" min="1" max="1000"></label>
+            <label>Sortierung
+                <select id="sort">
+                    <option value="desc">Neueste zuerst</option>
+                    <option value="asc">Älteste zuerst</option>
+                </select>
+            </label>
             <label>Format
                 <select id="format">
                     <option value="json">JSON</option>
@@ -36,8 +46,8 @@
             </label>
             <label class="check"><input type="checkbox" id="autoRefresh" checked> Auto-Refresh (10 s)</label>
             <button id="apply">Anwenden</button>
-        </div>
-        <div id="state" class="state"></div>
+        </form>
+        <div id="state" class="state" role="status">Zum Abrufen der Daten anmelden.</div>
     </section>
 
     <section class="panel">
@@ -46,7 +56,14 @@
     </section>
 
     <section class="panel">
-        <h2>Historische Messwerte</h2>
+        <div class="history-heading">
+            <h2>Historische Messwerte</h2>
+            <nav aria-label="Messwertseiten">
+                <button id="prev" disabled>Zurück</button>
+                <span id="pageInfo" aria-live="polite"></span>
+                <button id="next" disabled>Weiter</button>
+            </nav>
+        </div>
         <div class="table-wrap">
             <table>
                 <thead>

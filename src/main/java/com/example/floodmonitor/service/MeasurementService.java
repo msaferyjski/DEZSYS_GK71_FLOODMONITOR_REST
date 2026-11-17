@@ -2,6 +2,7 @@ package com.example.floodmonitor.service;
 
 import com.example.floodmonitor.exception.ApiException;
 import com.example.floodmonitor.model.Measurement;
+import com.example.floodmonitor.model.MeasurementPage;
 import com.example.floodmonitor.model.Station;
 import com.example.floodmonitor.model.Statistics;
 import com.example.floodmonitor.model.WarningLevel;
@@ -38,16 +39,23 @@ public class MeasurementService {
                 .orElseThrow(() -> ApiException.notFound("Für Station " + stationId + " liegen keine Messwerte vor"));
     }
 
-    public List<Measurement> history(String stationId, Instant from, Instant to, Integer limit, WarningLevel warningLevel) {
+    public MeasurementPage history(String stationId, Instant from, Instant to, Integer limit, WarningLevel warningLevel,
+                                   int page, String sort) {
         int max = limit == null ? defaultLimit : limit;
         if (max < 1 || max > maxLimit) {
             throw ApiException.badRequest("limit muss zwischen 1 und " + maxLimit + " liegen");
         }
-        return filtered(stationId, from, to)
+        if (page < 1 || !(sort.equals("asc") || sort.equals("desc"))) {
+            throw ApiException.badRequest("page muss positiv sein, sort muss asc oder desc sein");
+        }
+        Comparator<Measurement> order = Comparator.comparing(Measurement::getTimestamp);
+        List<Measurement> matches = filtered(stationId, from, to)
                 .filter(m -> warningLevel == null || m.getWarningLevel() == warningLevel)
-                .sorted(Comparator.comparing(Measurement::getTimestamp).reversed())
-                .limit(max)
+                .sorted(sort.equals("asc") ? order : order.reversed())
                 .toList();
+        int start = (int) Math.min((long) (page - 1) * max, matches.size());
+        int end = (int) Math.min((long) start + max, matches.size());
+        return new MeasurementPage(matches.subList(start, end), page, max, matches.size(), sort);
     }
 
     public Statistics statistics(String stationId, Instant from, Instant to) {

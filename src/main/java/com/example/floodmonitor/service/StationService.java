@@ -1,6 +1,7 @@
 package com.example.floodmonitor.service;
 
 import com.example.floodmonitor.exception.ApiException;
+import com.example.floodmonitor.model.Measurement;
 import com.example.floodmonitor.model.Station;
 import com.example.floodmonitor.model.StationStatus;
 import com.example.floodmonitor.model.WarningLevel;
@@ -8,6 +9,7 @@ import com.example.floodmonitor.repository.MeasurementRepository;
 import com.example.floodmonitor.repository.StationRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -39,7 +41,7 @@ public class StationService {
                 .orElseThrow(() -> ApiException.notFound("Station " + id + " wurde nicht gefunden"));
     }
 
-    public Station create(Station station) {
+    public synchronized Station create(Station station) {
         validate(station);
         if (stationRepository.existsById(station.getId())) {
             throw ApiException.conflict("Station " + station.getId() + " existiert bereits");
@@ -48,12 +50,29 @@ public class StationService {
         return withWarningLevel(stationRepository.save(station));
     }
 
-    public void delete(String id) {
+    public synchronized void delete(String id) {
         if (!stationRepository.existsById(id)) {
             throw ApiException.notFound("Station " + id + " wurde nicht gefunden");
         }
         stationRepository.deleteById(id);
         measurementRepository.deleteByStationId(id);
+    }
+
+    public synchronized void collect(Station source, Measurement[] batch) {
+        if (stationRepository.findById(source.getId()).orElse(null) != source || !source.isActive()) {
+            return;
+        }
+        Instant latest = measurementRepository.findLatest(source.getId()).map(Measurement::getTimestamp).orElse(null);
+        for (Measurement m : batch) {
+            if (m == null || !source.getId().equals(m.getStationId()) || m.getTimestamp() == null
+                    || (latest != null && !m.getTimestamp().isAfter(latest))) {
+                continue;
+            }
+            m.setWarningLevel(warningLevelService.calculate(source, m.getWaterLevel()));
+            source.setStatus(m.getStatus());
+            measurementRepository.save(m);
+            latest = m.getTimestamp();
+        }
     }
 
     private Station withWarningLevel(Station station) {
